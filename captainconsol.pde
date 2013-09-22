@@ -52,11 +52,11 @@ void draw() {
 
   if (areWeDead) {
     fill(255, 255, 255);
-    textFont(font, 60);
-    text("YOU ARE DEAD", 50, 300);
-    textFont(font, 20);
-    int pos = (int)textWidth(deathText);
-    text(deathText, (width/2) - pos/2, 340);
+   // textFont(font, 60);
+   // text("YOU ARE DEAD", 50, 300);
+   // textFont(font, 20);
+    //int pos = (int)textWidth(deathText);
+    //text(deathText, (width/2) - pos/2, 340);
   } 
   else {
 
