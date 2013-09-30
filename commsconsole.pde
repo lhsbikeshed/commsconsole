@@ -157,7 +157,9 @@ void oscEvent(OscMessage theOscMessage) {
       }
     } 
     else {
-
+    if (serialEnabled) {
+        serialPort.write("P,");
+      }
 
       poweredOn = true;
     }
