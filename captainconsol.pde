@@ -1,34 +1,26 @@
+import processing.video.*;
+
 import processing.serial.*;
 
 import oscP5.*;
 import netP5.*;
 
-import ddf.minim.signals.*;
-import ddf.minim.*;
-import ddf.minim.analysis.*;
-import ddf.minim.effects.*;
-import ddf.minim.ugens.*;
-
-
-
-import java.awt.Frame;
-import java.awt.BorderLayout;
-
-
+import java.util.*;
 import processing.video.*;
 
-Display[] displayList = new Display[2];
-int currentDisplay = 0;
+
 VideoDisplay videoDisplay;
 DefaultDisplay defaultDisplay;
 BootDisplay bootDisplay;
+DestructDisplay destructDisplay;
 
 
 OscP5 oscP5;
 String serverIP = "10.0.0.100";
 NetAddress  myRemoteLocation = new NetAddress(serverIP, 12000);
 
-
+int damageTimer = -1000;
+PImage noiseImage;
 
 boolean poweredOn = false;
 boolean poweringOn = false;
@@ -39,9 +31,12 @@ PFont font;
 //serial stuff
 String buffer = "";
 int bufPtr = 0;
-boolean serialEnabled = true;
+boolean serialEnabled = false;
 Serial serialPort;  
 
+//screens 
+Hashtable<String, Display> displayMap = new Hashtable<String, Display>();
+Display currentScreen;
 
 
 void setup() {
@@ -50,17 +45,25 @@ void setup() {
   videoDisplay = new VideoDisplay(this); 
   videoDisplay.setBg(0);
   defaultDisplay = new DefaultDisplay();
-  displayList[0] = defaultDisplay;
-  displayList[1] = videoDisplay;
-  bootDisplay = new BootDisplay();
+  destructDisplay = new DestructDisplay();
+
+  displayMap.put("idleDisplay", defaultDisplay);
+  displayMap.put("selfdestruct", destructDisplay);
+  displayMap.put("videoDisplay", videoDisplay);
+  currentScreen = defaultDisplay;
+
+  // bootDisplay = new BootDisplay();
   font = loadFont("HanzelExtendedNormal-48.vlw");
 
 
   oscP5 = new OscP5(this, "10.0.0.3", 12003);
-
+  noiseImage = loadImage("noise.png");
   if (serialEnabled) {
     serialPort = new Serial(this, "/dev/ttyUSB0", 9600);
   }
+
+  OscMessage myMessage = new OscMessage("/game/Hello/CommStation");  
+  oscP5.send(myMessage, myRemoteLocation);
 }
 
 
@@ -119,49 +122,31 @@ void draw() {
     } 
     else {
       if (poweredOn) {
-        displayList[currentDisplay].draw();
-      } 
-      else {
-        if (poweringOn) {
-          bootDisplay.draw();
-          if (bootDisplay.isReady()) {
-            poweredOn = true;
-            poweringOn = false;
-            if (serialEnabled) {
-              serialPort.write("P,");
-            }
-          }
-        }
+        currentScreen.draw();
       }
+    }
+  }
+  
+  if ( damageTimer + 1000 > millis()) {
+    if (random(10) > 3) {
+      image(noiseImage, 0, 0, width, height);
     }
   }
 }
 void mouseClicked() {
   println(mouseX + ":" + mouseY);
 }
+
+void changeDisplay(Display d) {
+  currentScreen.stop();
+  currentScreen = d;
+  currentScreen.start();
+}
+
+
 void oscEvent(OscMessage theOscMessage) {
-  // println(theOscMessage);
 
-  if (theOscMessage.checkAddrPattern("/display/captain/incomingCall")==true) {
-    displayList[currentDisplay].stop();
-    currentDisplay = 1;
-    displayList[currentDisplay].start();
-    displayList[currentDisplay].oscMessage(theOscMessage);
-  } 
-  else if (theOscMessage.checkAddrPattern("/display/captain/hangup")==true) {
-    displayList[currentDisplay].oscMessage(theOscMessage);
-    displayList[currentDisplay].stop();
-    currentDisplay = 0;
-    displayList[currentDisplay].start();
-  }
-  else if (theOscMessage.checkAddrPattern("/display/captain/change")==true) {
-    displayList[currentDisplay].stop();
-    currentDisplay = theOscMessage.get(0).intValue();
-    displayList[currentDisplay].start();
-
-    return;
-  }
-  else if (theOscMessage.checkAddrPattern("/system/reactor/stateUpdate")==true) {
+  if (theOscMessage.checkAddrPattern("/system/reactor/stateUpdate")==true) {
     int state = theOscMessage.get(0).intValue();
     if (state == 0) {
       poweredOn = false;
@@ -174,12 +159,23 @@ void oscEvent(OscMessage theOscMessage) {
     else {
 
 
-      if (!poweredOn ) {
-        poweringOn = true;
-        bootDisplay.start();
-      }
+      poweredOn = true;
     }
   } 
+  else if ( theOscMessage.checkAddrPattern("/clientscreen/CommsStation/changeTo") ) {
+    String changeTo = theOscMessage.get(0).stringValue();
+    try {
+      Display d = displayMap.get(changeTo);
+      println("found display for : " + changeTo);
+      changeDisplay(d);
+    } 
+    catch(Exception e) {
+      println("no display found for " + changeTo);
+      changeDisplay(defaultDisplay);
+    }
+  }  
+
+
   else if (theOscMessage.checkAddrPattern("/scene/youaredead") == true) {
     //oh noes we died
     areWeDead = true;
@@ -187,7 +183,7 @@ void oscEvent(OscMessage theOscMessage) {
   } 
   else if (theOscMessage.checkAddrPattern("/game/reset") == true) {
     //reset the entire game
-    currentDisplay = 0;
+    currentScreen = defaultDisplay;
     poweredOn = false;
     poweringOn = false;
     areWeDead = false;
@@ -212,12 +208,15 @@ void oscEvent(OscMessage theOscMessage) {
         serialPort.write("p,");
       }
     }
-  } else if(theOscMessage.checkAddrPattern("/ship/damage")){
+  } 
+  else if (theOscMessage.checkAddrPattern("/ship/damage")) {
     if (serialEnabled) {
-        serialPort.write("d,");
-      }
-  } else {
-    displayList[currentDisplay].oscMessage(theOscMessage);
+      serialPort.write("d,");
+    }
+    damageTimer = millis();
+  } 
+  else {
+    currentScreen.oscMessage(theOscMessage);
   }
 }
 

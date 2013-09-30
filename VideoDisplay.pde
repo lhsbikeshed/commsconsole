@@ -1,4 +1,4 @@
-import codeanticode.gsvideo.*;
+//import codeanticode.gsvideo.*;
 public interface Display {
 
   public void draw();
@@ -10,7 +10,8 @@ public interface Display {
 public class VideoDisplay implements Display {
 
 
-  GSCapture cam;
+  //LINUX GSCapture cam;
+  Capture cam;
   int numPixels;
   int[] backgroundPixels;
   //  Capture video;
@@ -37,26 +38,17 @@ public class VideoDisplay implements Display {
   int nextDisplay = 0;
 
 
-  //sound
-  Minim minim;
-  LiveInput input;
-  AudioOutput output;
-  WhiteNoise s;
-  BitCrush b;
-  Constant resLevel;
-  Gain gainControl;
-  long disableTime = 0;
-  long disableDuration = 0;
+  
 
   PApplet parent;
 
   public VideoDisplay(PApplet parent) {
     this.parent = parent;
     //println(Capture.list());
-    cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
+    //cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
+    cam = new Capture(parent, 320, 240);
     cam.start();
-    //video = new Capture(parent, 640, 480);
-    //video.start();  
+      
     numPixels = cam.width * cam.height;
     backgroundPixels = new int[numPixels];
     //loadPixels();
@@ -79,29 +71,14 @@ public class VideoDisplay implements Display {
 
     displayImage = createImage(320, 240, RGB);
 
-    //saaaand
-    // minim = new Minim(parent);
-    // output = minim.getLineOut(Minim.MONO, 1024, 16000, 16);
-    // input = new LiveInput( minim.getInputStream(output.getFormat().getChannels(), output.bufferSize(), output.sampleRate(), output.getFormat().getSampleSizeInBits()) );
-    //
-    // input.enableMonitoring();
-    //  s = new WhiteNoise(0.1);
-    //output.addSignal(s);
-    //  GranulateSteady grain = new GranulateSteady();
-    // b = new BitCrush();
-    // patch the input through the grain effect to the output
-    // resLevel = new Constant(16);
-    // resLevel.setConstant(16);
-    // resLevel.patch(b.bitRes);
-    // gainControl = new Gain(0);
-    //input.patch(b).patch(gainControl).patch(output);
+    
   }
 
   public void start() {
 
-    callTime = 0;
+    callTime = millis();
     calling = false;
-    nextDisplay = 0;
+    nextDisplay = 1;
     setBg(0);
   }
 
@@ -112,7 +89,7 @@ public class VideoDisplay implements Display {
   public void draw() {
 
     if (callTime + 2000 < millis()) {
-      setBg(nextDisplay);
+      setBg(1);
     }
     if (currentBg == 0) {
       image(bgImages[0], 0, 0, parent.width, parent.height);
@@ -124,8 +101,8 @@ public class VideoDisplay implements Display {
         //resLevel.setConstant(map(videoNoiseLevel, 0, 100, 14, 4) - 3);
         if (random(100) < videoNoiseLevel ) {
           image(displayImage, 0, random(10) - 5, parent.width, parent.height);
-          disableTime = millis();
-          disableDuration = (long)random(200);
+          
+          
 
 
           return;
@@ -176,12 +153,7 @@ public class VideoDisplay implements Display {
 
   public void setBg(int bg) {
     currentBg = bg;
-    if (bg == 0) {
-      //gainControl.setValue(-60);
-    } 
-    else {
-      //gainControl.setValue(0);
-    }
+   
   }
   public void oscMessage(OscMessage theOscMessage) {
     if (theOscMessage.checkAddrPattern("/display/captain/setbg")==true) {
