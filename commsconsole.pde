@@ -1,4 +1,8 @@
-import processing.video.*;
+//uncomment for linux
+import codeanticode.gsvideo.*;
+
+//uncomment for windows
+//import processing.video.*;
 
 import processing.serial.*;
 
