@@ -13,6 +13,13 @@ import java.util.*;
 import processing.video.*;
 
 
+
+import java.util.Hashtable;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
+
+
 VideoDisplay videoDisplay;
 DefaultDisplay defaultDisplay;
 BootDisplay bootDisplay;
@@ -46,6 +53,7 @@ Display currentScreen;
 void setup() {
   size(1024, 768, P2D);
   frameRate(30);
+  hideCursor();
   videoDisplay = new VideoDisplay(this); 
   videoDisplay.setBg(0);
   defaultDisplay = new DefaultDisplay();
@@ -145,6 +153,13 @@ void changeDisplay(Display d) {
   currentScreen.stop();
   currentScreen = d;
   currentScreen.start();
+}
+
+void hideCursor() {
+  BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+  Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+  cursorImg, new Point(0, 0), "blank cursor");
+  frame.setCursor(blankCursor);
 }
 
 
