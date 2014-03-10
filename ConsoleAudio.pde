@@ -20,37 +20,10 @@ public class ConsoleAudio {
     this.minim = minim;
     loadSounds();
 
-    //set up tone gen
-    toneOutput   = minim.getLineOut();
-    wave = new Oscil( 200, 0.8, Waves.TRIANGLE );
-    fm   = new Oscil( 10, 2, Waves.SINE );
-    // set the offset of fm so that it generates values centered around 200 Hz
-    fm.offset.setLastValue( 200 );
-    // patch it to the frequency of wave so it controls it
-    fm.patch( wave.frequency );
-    // and patch wave to the output
-
-    wave.patch( toneOutput );
-    toneOutput.setPan(1.0);
-    setToneState(false);
+   
   }
 
 
-  public void setToneState(boolean state) {
-    if (state) {
-      wave.patch( toneOutput );
-    } 
-    else {
-      wave.unpatch( toneOutput );
-    }
-  }
-
-  //x should range from 220 - 50;
-  //y should range from 0.1 - 100
-  public void setToneValue(float x,  float y) {
-    fm.frequency.setLastValue( y );
-    fm.amplitude.setLastValue( x );
-  }
 
   private void loadSounds() {
     //load sounds from soundlist.cfg
@@ -63,7 +36,7 @@ public class ConsoleAudio {
         println("loading: " + parts[1] + " as " + parts[0]);
         AudioPlayer s = minim.loadFile("audio/" + parts[1], 512);
         //move to right channel
-        s.setPan(1.0f);
+        //s.setPan(1.0f);
         audioList.put(parts[0], s);
         println(s.getControls());
       }

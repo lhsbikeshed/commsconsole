@@ -1,3 +1,5 @@
+import codeanticode.gsvideo.*;
+
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
 import ddf.minim.*;
@@ -13,7 +15,7 @@ import oscP5.*;
 import netP5.*;
 
 import java.util.*;
-import processing.video.*;
+//import processing.video.*;
 
 
 VideoDisplay videoDisplay;
@@ -32,7 +34,7 @@ NetAddress  myRemoteLocation = new NetAddress(serverIP, 12000);
 int damageTimer = -1000;
 PImage noiseImage;
 
-boolean poweredOn = true;
+boolean poweredOn = false;
 boolean poweringOn = false;
 boolean areWeDead = false;
 String deathText = "";
@@ -44,7 +46,7 @@ long lastPanelChange = 0;
 //serial stuff
 String buffer = "";
 int bufPtr = 0;
-boolean serialEnabled = false;
+boolean serialEnabled = true;
 Serial serialPort;  
 
 //screens 
@@ -75,11 +77,22 @@ void setup() {
   oscP5 = new OscP5(this, "10.0.0.3", 12003);
   noiseImage = loadImage("noise.png");
   if (serialEnabled) {
-    serialPort = new Serial(this, "/dev/ttyACM0", 9600);
+    serialPort = new Serial(this, "/dev/ttyUSB9", 9600);
+   clearPanel();
   }
 
   OscMessage myMessage = new OscMessage("/game/Hello/CommStation");  
   oscP5.send(myMessage, myRemoteLocation);
+}
+
+void clearPanel(){
+  if(serialEnabled){
+     serialPort.write(0);
+    serialPort.write(0);
+    serialPort.write(0);
+    serialPort.write(0);
+    serialPort.write(',');
+  }
 }
 
 
@@ -130,22 +143,24 @@ void keyPressed(){
       else {
         if (poweredOn) {
           currentScreen.draw();
-          if(videoDisplay.isInCall()){
+          
             if(lastPanelChange + 500 < millis()){
+              println("in call");
               lastPanelChange = millis();
               String s = "";
               for(int i = 0; i < 4; i++){
                 char c = (char)random(255);
-                s = s + c;
+                if(serialEnabled){
+                  serialPort.write(c);
+                }
+              
               } 
-              s = s + ",";
               if(serialEnabled){
-                serialPort.write(s);
-              } else {
-                println(s);
-              }
+                  serialPort.write(',');
+                }
+              
             }
-          }
+          
         }
       }
     }
@@ -175,14 +190,10 @@ void keyPressed(){
         poweredOn = false;
         poweringOn = false;
         bootDisplay.stop();
-        if (serialEnabled) {
-          serialPort.write("p,");
-        }
+        clearPanel();
       } 
       else {
-        if (serialEnabled) {
-          serialPort.write("P,");
-        }
+        
 
         poweredOn = true;
       }
@@ -205,6 +216,7 @@ void keyPressed(){
       //oh noes we died
       areWeDead = true;
       deathText = theOscMessage.get(0).stringValue();
+      clearPanel();
     } 
     else if (theOscMessage.checkAddrPattern("/game/reset") == true) {
       //reset the entire game
@@ -212,9 +224,7 @@ void keyPressed(){
       poweredOn = false;
       poweringOn = false;
       areWeDead = false;
-      if (serialEnabled) {
-        serialPort.write("p,");
-      }
+      clearPanel();
     }  
     else if (theOscMessage.checkAddrPattern("/comms/powerState")==true) {
 
@@ -222,22 +232,16 @@ void keyPressed(){
         poweredOn = true;
         poweringOn = false;
         bootDisplay.stop();
-        if (serialEnabled) {
-          serialPort.write("P,");
-        }
+        
       } 
       else {
         poweredOn = false;
         poweringOn = false;
-        if (serialEnabled) {
-          serialPort.write("p,");
-        }
+        clearPanel();
       }
     } 
     else if (theOscMessage.checkAddrPattern("/ship/damage")) {
-      if (serialEnabled) {
-        serialPort.write("d,");
-      }
+      
       damageTimer = millis();
     } 
     else {
