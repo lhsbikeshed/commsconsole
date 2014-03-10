@@ -1,3 +1,10 @@
+import ddf.minim.spi.*;
+import ddf.minim.signals.*;
+import ddf.minim.*;
+import ddf.minim.analysis.*;
+import ddf.minim.ugens.*;
+import ddf.minim.effects.*;
+
 import processing.video.*;
 
 import processing.serial.*;
@@ -14,6 +21,9 @@ DefaultDisplay defaultDisplay;
 BootDisplay bootDisplay;
 DestructDisplay destructDisplay;
 
+ConsoleAudio consoleAudio;
+Minim minim;
+
 
 OscP5 oscP5;
 String serverIP = "10.0.0.100";
@@ -22,11 +32,14 @@ NetAddress  myRemoteLocation = new NetAddress(serverIP, 12000);
 int damageTimer = -1000;
 PImage noiseImage;
 
-boolean poweredOn = false;
+boolean poweredOn = true;
 boolean poweringOn = false;
 boolean areWeDead = false;
 String deathText = "";
 PFont font;
+
+
+long lastPanelChange = 0;
 
 //serial stuff
 String buffer = "";
@@ -52,6 +65,9 @@ void setup() {
   displayMap.put("videoDisplay", videoDisplay);
   currentScreen = defaultDisplay;
 
+  minim = new Minim(this);
+  consoleAudio = new ConsoleAudio(minim);
+  consoleAudio.loadSounds();
   // bootDisplay = new BootDisplay();
   font = loadFont("HanzelExtendedNormal-48.vlw");
 
@@ -59,7 +75,7 @@ void setup() {
   oscP5 = new OscP5(this, "10.0.0.3", 12003);
   noiseImage = loadImage("noise.png");
   if (serialEnabled) {
-    serialPort = new Serial(this, "/dev/ttyUSB0", 9600);
+    serialPort = new Serial(this, "/dev/ttyACM0", 9600);
   }
 
   OscMessage myMessage = new OscMessage("/game/Hello/CommStation");  
@@ -67,158 +83,165 @@ void setup() {
 }
 
 
-void processSerial(String s) {
-  String[] params = s.split(":");
-  String cmd = params[0];
-  if (cmd.equals("i") ) {      //disk inserted but its not correct
-    OscMessage msg = new OscMessage("/scene/nebula/diskInsert");
-    msg.add(0);
-    oscP5.flush(msg, myRemoteLocation);
-  } 
-  else if (cmd.equals("I")) {    //disk inserted and it was correct
-    println("Disk good");
-    OscMessage msg = new OscMessage("/scene/nebula/diskInsert");
-    msg.add(1);
-    oscP5.flush(msg, myRemoteLocation);
-  }
+void processSerial(char s) {
 
   println("Received : " + s);
+  if (poweredOn) {
+    consoleAudio.randomBeep();
+  
+  }
 }
 
-void draw() {
-  background(0, 0, 0);
+void keyPressed(){
+  processSerial(key);
+}
 
-  //serial handling
-  if (serialEnabled && serialPort.available() > 0) {
-    char c = (char)serialPort.read();
-    if (c == ',') {
-      processSerial(buffer);
-      buffer = "";
-    } 
-    else {
-      buffer += c;
+  void draw() {
+    background(0, 0, 0);
+
+    //serial handling
+    if (serialEnabled && serialPort.available() > 0) {
+      char c = (char)serialPort.read();
+      
+        processSerial(c);
+       
     }
-  }
+    
 
-
-
-  if (areWeDead) {
-    fill(255, 255, 255);
-    // textFont(font, 60);
-    // text("YOU ARE DEAD", 50, 300);
-    // textFont(font, 20);
-    //int pos = (int)textWidth(deathText);
-    //text(deathText, (width/2) - pos/2, 340);
-  } 
-  else {
 
     if (areWeDead) {
       fill(255, 255, 255);
-      textFont(font, 60);
-      text("YOU ARE DEAD", 50, 300);
-      textFont(font, 20);
-      int pos = (int)textWidth(deathText);
-      text(deathText, (width/2) - pos/2, 340);
+      // textFont(font, 60);
+      // text("YOU ARE DEAD", 50, 300);
+      // textFont(font, 20);
+      //int pos = (int)textWidth(deathText);
+      //text(deathText, (width/2) - pos/2, 340);
     } 
     else {
-      if (poweredOn) {
-        currentScreen.draw();
+
+      if (areWeDead) {
+        fill(255, 255, 255);
+        textFont(font, 60);
+        text("YOU ARE DEAD", 50, 300);
+        textFont(font, 20);
+        int pos = (int)textWidth(deathText);
+        text(deathText, (width/2) - pos/2, 340);
+      } 
+      else {
+        if (poweredOn) {
+          currentScreen.draw();
+          if(videoDisplay.isInCall()){
+            if(lastPanelChange + 500 < millis()){
+              lastPanelChange = millis();
+              String s = "";
+              for(int i = 0; i < 4; i++){
+                char c = (char)random(255);
+                s = s + c;
+              } 
+              s = s + ",";
+              if(serialEnabled){
+                serialPort.write(s);
+              } else {
+                println(s);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if ( damageTimer + 1000 > millis()) {
+      if (random(10) > 3) {
+        image(noiseImage, 0, 0, width, height);
       }
     }
   }
-  
-  if ( damageTimer + 1000 > millis()) {
-    if (random(10) > 3) {
-      image(noiseImage, 0, 0, width, height);
-    }
+  void mouseClicked() {
+    println(mouseX + ":" + mouseY);
   }
-}
-void mouseClicked() {
-  println(mouseX + ":" + mouseY);
-}
 
-void changeDisplay(Display d) {
-  currentScreen.stop();
-  currentScreen = d;
-  currentScreen.start();
-}
+  void changeDisplay(Display d) {
+    currentScreen.stop();
+    currentScreen = d;
+    currentScreen.start();
+  }
 
 
-void oscEvent(OscMessage theOscMessage) {
+  void oscEvent(OscMessage theOscMessage) {
 
-  if (theOscMessage.checkAddrPattern("/system/reactor/stateUpdate")==true) {
-    int state = theOscMessage.get(0).intValue();
-    if (state == 0) {
+    if (theOscMessage.checkAddrPattern("/system/reactor/stateUpdate")==true) {
+      int state = theOscMessage.get(0).intValue();
+      if (state == 0) {
+        poweredOn = false;
+        poweringOn = false;
+        bootDisplay.stop();
+        if (serialEnabled) {
+          serialPort.write("p,");
+        }
+      } 
+      else {
+        if (serialEnabled) {
+          serialPort.write("P,");
+        }
+
+        poweredOn = true;
+      }
+    } 
+    else if ( theOscMessage.checkAddrPattern("/clientscreen/CommsStation/changeTo") ) {
+      String changeTo = theOscMessage.get(0).stringValue();
+      try {
+        Display d = displayMap.get(changeTo);
+        println("found display for : " + changeTo);
+        changeDisplay(d);
+      } 
+      catch(Exception e) {
+        println("no display found for " + changeTo);
+        changeDisplay(defaultDisplay);
+      }
+    }  
+
+
+    else if (theOscMessage.checkAddrPattern("/scene/youaredead") == true) {
+      //oh noes we died
+      areWeDead = true;
+      deathText = theOscMessage.get(0).stringValue();
+    } 
+    else if (theOscMessage.checkAddrPattern("/game/reset") == true) {
+      //reset the entire game
+      currentScreen = defaultDisplay;
       poweredOn = false;
       poweringOn = false;
-      bootDisplay.stop();
+      areWeDead = false;
       if (serialEnabled) {
         serialPort.write("p,");
       }
+    }  
+    else if (theOscMessage.checkAddrPattern("/comms/powerState")==true) {
+
+      if (theOscMessage.get(0).intValue() == 1) {
+        poweredOn = true;
+        poweringOn = false;
+        bootDisplay.stop();
+        if (serialEnabled) {
+          serialPort.write("P,");
+        }
+      } 
+      else {
+        poweredOn = false;
+        poweringOn = false;
+        if (serialEnabled) {
+          serialPort.write("p,");
+        }
+      }
+    } 
+    else if (theOscMessage.checkAddrPattern("/ship/damage")) {
+      if (serialEnabled) {
+        serialPort.write("d,");
+      }
+      damageTimer = millis();
     } 
     else {
-    if (serialEnabled) {
-        serialPort.write("P,");
-      }
-
-      poweredOn = true;
+      currentScreen.oscMessage(theOscMessage);
     }
-  } 
-  else if ( theOscMessage.checkAddrPattern("/clientscreen/CommsStation/changeTo") ) {
-    String changeTo = theOscMessage.get(0).stringValue();
-    try {
-      Display d = displayMap.get(changeTo);
-      println("found display for : " + changeTo);
-      changeDisplay(d);
-    } 
-    catch(Exception e) {
-      println("no display found for " + changeTo);
-      changeDisplay(defaultDisplay);
-    }
-  }  
-
-
-  else if (theOscMessage.checkAddrPattern("/scene/youaredead") == true) {
-    //oh noes we died
-    areWeDead = true;
-    deathText = theOscMessage.get(0).stringValue();
-  } 
-  else if (theOscMessage.checkAddrPattern("/game/reset") == true) {
-    //reset the entire game
-    currentScreen = defaultDisplay;
-    poweredOn = false;
-    poweringOn = false;
-    areWeDead = false;
-    if (serialEnabled) {
-      serialPort.write("p,");
-    }
-  }  
-  else if (theOscMessage.checkAddrPattern("/comms/powerState")==true) {
-
-    if (theOscMessage.get(0).intValue() == 1) {
-      poweredOn = true;
-      poweringOn = false;
-      bootDisplay.stop();
-      if (serialEnabled) {
-        serialPort.write("P,");
-      }
-    } 
-    else {
-      poweredOn = false;
-      poweringOn = false;
-      if (serialEnabled) {
-        serialPort.write("p,");
-      }
-    }
-  } 
-  else if (theOscMessage.checkAddrPattern("/ship/damage")) {
-    if (serialEnabled) {
-      serialPort.write("d,");
-    }
-    damageTimer = millis();
-  } 
-  else {
-    currentScreen.oscMessage(theOscMessage);
   }
-}
 

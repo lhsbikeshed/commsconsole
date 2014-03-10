@@ -37,7 +37,7 @@ public class VideoDisplay implements Display {
   boolean calling = false;
   int nextDisplay = 0;
 
-
+  boolean inCall = false;
   
 
   PApplet parent;
@@ -80,10 +80,16 @@ public class VideoDisplay implements Display {
     calling = false;
     nextDisplay = 1;
     setBg(0);
+    inCall = false;
   }
 
   public void stop() {
     setBg(0);
+    inCall = false;
+  }
+  
+  public boolean isInCall(){
+    return inCall;
   }
 
   public void draw() {
@@ -172,11 +178,13 @@ public class VideoDisplay implements Display {
     else if (theOscMessage.checkAddrPattern("/display/captain/incomingCall")==true) {
       callTime = millis();
       calling = true;
+      inCall = true;
       nextDisplay = theOscMessage.get(0).intValue();
       setBg(0);
     } 
     else if (theOscMessage.checkAddrPattern("/display/captain/hangup") == true) {
       setBg(0);
+      inCall = false;
     }
   }
 }
