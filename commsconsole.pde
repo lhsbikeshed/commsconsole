@@ -1,4 +1,4 @@
-import codeanticode.gsvideo.*;
+//import codeanticode.gsvideo.*;
 
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
@@ -28,7 +28,7 @@ Minim minim;
 
 
 OscP5 oscP5;
-String serverIP = "10.0.0.100";
+String serverIP = "127.0.0.1";
 NetAddress  myRemoteLocation = new NetAddress(serverIP, 12000);
 
 int damageTimer = -1000;
@@ -46,12 +46,13 @@ long lastPanelChange = 0;
 //serial stuff
 String buffer = "";
 int bufPtr = 0;
-boolean serialEnabled = true;
+boolean serialEnabled = false;
 Serial serialPort;  
 
 //screens 
 Hashtable<String, Display> displayMap = new Hashtable<String, Display>();
 Display currentScreen;
+
 
 
 void setup() {
@@ -145,7 +146,7 @@ void keyPressed(){
           currentScreen.draw();
           
             if(lastPanelChange + 500 < millis()){
-              println("in call");
+             // println("in call");
               lastPanelChange = millis();
               String s = "";
               for(int i = 0; i < 4; i++){

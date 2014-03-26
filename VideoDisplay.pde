@@ -11,10 +11,10 @@ public class VideoDisplay implements Display {
 
 
   //LINUX GSCapture cam;
-  GSCapture cam;
+  Capture cam;
   int numPixels;
   int[] backgroundPixels;
-  //  Capture video;
+ 
 
 
 
@@ -37,6 +37,7 @@ public class VideoDisplay implements Display {
   boolean calling = false;
   int nextDisplay = 0;
 
+  long lastKeepAlive = 0;
   boolean inCall = false;
   
 
@@ -44,9 +45,9 @@ public class VideoDisplay implements Display {
 
   public VideoDisplay(PApplet parent) {
     this.parent = parent;
-    //println(Capture.list());
-    cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
-    //cam = new Capture(parent, 320, 240);
+   
+    //cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
+    cam = new Capture(parent, 320, 240);
     cam.start();
       
     numPixels = cam.width * cam.height;
@@ -101,6 +102,13 @@ public class VideoDisplay implements Display {
       image(bgImages[0], 0, 0, parent.width, parent.height);
     } 
     else {
+      
+      if(lastKeepAlive + 500 < millis()){
+        OscMessage m = new OscMessage("/display/captain/inCall");
+        oscP5.flush(m, myRemoteLocation);
+        lastKeepAlive = millis();
+      }
+      
       if (cam.available()) {
         cam.read();
         //stutter the image randomly
