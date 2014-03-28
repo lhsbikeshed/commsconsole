@@ -176,10 +176,14 @@ void keyPressed(){
     println(mouseX + ":" + mouseY);
   }
 
+
+ /* change visible screen, but only if its not the same as current one */
   void changeDisplay(Display d) {
-    currentScreen.stop();
-    currentScreen = d;
-    currentScreen.start();
+    if(d != currentScreen){
+      currentScreen.stop();
+      currentScreen = d;
+      currentScreen.start();
+    }
   }
 
 
