@@ -53,5 +53,6 @@ public class BootDisplay implements Display {
   }
   public void keyReleased() {
   }
+  public void serialMessage(SerialEvent s){}
 }
 

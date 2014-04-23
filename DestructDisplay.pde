@@ -51,4 +51,5 @@ public class DestructDisplay implements Display {
 
   public void keyPressed(){}
   public void keyReleased(){}
+  public void serialMessage(SerialEvent s){}
 }
