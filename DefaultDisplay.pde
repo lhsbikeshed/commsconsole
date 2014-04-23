@@ -32,9 +32,14 @@ public class DefaultDisplay implements Display {
         //alert the modconsole that a call is coming through
         
       } 
-      else if (dialTime + 7000 > millis()) {
+      else if (dialTime + 10000 > millis()) {
         text("NO RESPONSE", 52, 596);
         
+        
+        
+      } else if(dialTime + 12000 > millis()){
+        dialFreq = "";
+        currentState = CallState.WAITING;
       }
     }
   }
@@ -45,6 +50,7 @@ public class DefaultDisplay implements Display {
     OscMessage m = new OscMessage("/display/captain/dialRequest");
     m.add(dialFreq);
     oscP5.flush(m, myRemoteLocation);
+    println("send diaing req...");
   }
 
   public void oscMessage(OscMessage theOscMessage) {
@@ -59,7 +65,7 @@ public class DefaultDisplay implements Display {
           dialFreq = "";
         }
       } 
-      else if (s.rawData == 'K') {  //dial button
+      else if (s.rawData == 'h') {  //dial button
         dialThatShit();
       }
     }

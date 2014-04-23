@@ -1,4 +1,4 @@
-//import codeanticode.gsvideo.*;
+import codeanticode.gsvideo.*;
 
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
@@ -18,7 +18,7 @@ import java.util.*;
 //import processing.video.*;
 
 
-boolean testMode = true;
+boolean testMode = false;
 
 //---------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ CamComponent camComponent;
 
 OscP5 oscP5;
 String serverIP = "127.0.0.1";
-NetAddress  myRemoteLocation = new NetAddress(serverIP, 12000);
+NetAddress  myRemoteLocation;
 
 int damageTimer = -1000;
 PImage noiseImage;
@@ -89,6 +89,7 @@ void setup() {
 
   if (testMode) {
     oscP5 = new OscP5(this, "127.0.0.1", 12003);
+    serverIP = "127.0.0.1";
     serialEnabled = false;
     poweredOn = true;
   } 
@@ -97,9 +98,12 @@ void setup() {
     oscP5 = new OscP5(this, "10.0.0.3", 12003);
     serialEnabled = true;
     poweredOn = false;
+    serverIP = "10.0.0.100";
   }
+  myRemoteLocation = new NetAddress(serverIP, 12000);
   noiseImage = loadImage("noise.png");
   if (serialEnabled) {
+    
     serialPort = new Serial(this, "/dev/ttyUSB9", 9600);
     clearPanel();
   }
