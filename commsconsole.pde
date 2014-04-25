@@ -1,4 +1,4 @@
-import codeanticode.gsvideo.*;
+//import codeanticode.gsvideo.*;
 
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
@@ -18,7 +18,7 @@ import java.util.*;
 //import processing.video.*;
 
 
-boolean testMode = false;
+boolean testMode = true;
 
 //---------------------------------------------------------------------
 

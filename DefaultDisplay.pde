@@ -10,7 +10,7 @@ public class DefaultDisplay implements Display {
   long dialTime = 0;
 
   public DefaultDisplay() {
-    bgImage = loadImage("hold.png");
+    bgImage = loadImage("idlebg.png");
   }
 
 
@@ -20,24 +20,43 @@ public class DefaultDisplay implements Display {
   }
 
   public void draw() {
-    image(bgImage, 190, 0, bgImage.width * 2, bgImage.height*2);
+    image(bgImage, 0, 0, width, height);
     textFont(font, 48);
-    String s = "Enter freq: ";
-    s += dialFreq + dialDisplay.substring(dialFreq.length(), dialDisplay.length());
-    text(s, 88, 518);
+    String s = "";
+    s += dialFreq;
+    text(s, 606, 566);
+
 
     if (currentState == CallState.DIALLING) {
       if (dialTime + 5000 > millis()) {
-        text("WAITING FOR RESPONSE..", 52, 596);
+        textFont(font, 32);
+        text("WAITING FOR RESPONSE..", 144, 667);
         //alert the modconsole that a call is coming through
-        
+        noFill();
+        strokeWeight(3);
+        stroke(255, 255, 0);
+        float sizeMod = map(millis() % 1000, 0, 1000, 0, 1.0);
+        int numBands = 3;
+        int baseRadius = 400;
+        int gap = 150;
+        int maxRad = gap * numBands;
+
+        for (int i = 0; i < numBands; i++) {
+
+
+          int newRad = (int)(300 * sizeMod) + i * gap;
+          newRad = baseRadius + newRad % maxRad;
+          int alpha = (int)map(newRad, baseRadius, baseRadius + maxRad, 255, 0);
+          stroke(255, 255, 0, alpha);
+
+          arc(507, 290, newRad, newRad, radians(-30), radians(30));
+          arc(507, 290, newRad, newRad, radians(-210), radians(-150));
+        }
       } 
       else if (dialTime + 10000 > millis()) {
-        text("NO RESPONSE", 52, 596);
-        
-        
-        
-      } else if(dialTime + 12000 > millis()){
+        text("NO RESPONSE", 144, 667);
+      } 
+      else if (dialTime + 12000 > millis()) {
         dialFreq = "";
         currentState = CallState.WAITING;
       }
