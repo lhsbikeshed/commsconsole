@@ -15,6 +15,9 @@ import oscP5.*;
 import netP5.*;
 
 import java.util.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+
 //import processing.video.*;
 
 
@@ -30,6 +33,9 @@ DestructDisplay destructDisplay;
 ConsoleAudio consoleAudio;
 Minim minim;
 CamComponent camComponent;
+
+//track some of the ship state
+ShipState shipState = new ShipState();
 
 
 OscP5 oscP5;
@@ -108,7 +114,7 @@ void setup() {
     clearPanel();
   }
   
-  
+  hideCursor();
 
   OscMessage myMessage = new OscMessage("/game/Hello/CommStation");  
   oscP5.send(myMessage, myRemoteLocation);
@@ -277,9 +283,22 @@ void oscEvent(OscMessage theOscMessage) {
   else if (theOscMessage.checkAddrPattern("/ship/damage")) {
 
     damageTimer = millis();
+  } else if (theOscMessage.checkAddrPattern("/ship/stats")==true) {
+
+
+    shipState.hullState = theOscMessage.get(2).floatValue();
   } 
   else {
     currentScreen.oscMessage(theOscMessage);
   }
 }
+
+
+void hideCursor() {
+  BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+  Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+  cursorImg, new Point(0, 0), "blank cursor");
+  frame.setCursor(blankCursor);
+}
+
 

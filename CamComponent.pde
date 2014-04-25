@@ -40,7 +40,7 @@ public class CamComponent {
     if (cam.available()) {
       cam.read();
       //stutter the image randomly
-
+      videoNoiseLevel = (int)map(shipState.hullState, 0, 100, 15, 2);
       if (random(100) < videoNoiseLevel ) {
         image(displayImage, 0, random(10) - 5, parent.width, parent.height);
         return;

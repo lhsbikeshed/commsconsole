@@ -64,6 +64,8 @@ public class VideoDisplay implements Display {
   }
 
   public void draw() {
+    
+    
 
     if (callTime + 2000 > millis()) {
       image(callingImage, 0,0, width, height);
