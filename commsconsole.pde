@@ -68,17 +68,24 @@ Hashtable<String, Display> displayMap = new Hashtable<String, Display>();
 Display currentScreen;
 
 
+//mission timer 
+long countdownStartTime = 1000;
+boolean countdownRunning = false;
+long countdownDuration = 900000; //15 min default
+
+boolean globalBlinker = false;
+long blinkTime = 0;
 
 void setup() {
   size(1024, 768, P2D);
   frameRate(30);
-  
+
   //set up the camera component
   camComponent = new CamComponent(this);
-  
+
   videoDisplay = new VideoDisplay(this); 
   videoDisplay.setCamComponent(camComponent);
- 
+
   defaultDisplay = new DefaultDisplay();
   destructDisplay = new DestructDisplay();
 
@@ -109,11 +116,11 @@ void setup() {
   myRemoteLocation = new NetAddress(serverIP, 12000);
   noiseImage = loadImage("noise.png");
   if (serialEnabled) {
-    
+
     serialPort = new Serial(this, "/dev/ttyUSB9", 9600);
     clearPanel();
   }
-  
+
   hideCursor();
 
   OscMessage myMessage = new OscMessage("/game/Hello/CommStation");  
@@ -141,9 +148,8 @@ void processSerial(char s) {
   e.rawData = s;
   e.eventName = "KEY";
   e.data = "" + s;
-  
+
   currentScreen.serialMessage(e);
-  
 }
 
 void keyPressed() {
@@ -152,7 +158,10 @@ void keyPressed() {
 
 void draw() {
   background(0, 0, 0);
-
+  if (blinkTime + 750 < millis()) {
+    blinkTime = millis();
+    globalBlinker = ! globalBlinker;
+  }
   //serial handling
   if (serialEnabled && serialPort.available() > 0) {
     char c = (char)serialPort.read();
@@ -257,6 +266,7 @@ void oscEvent(OscMessage theOscMessage) {
     //oh noes we died
     areWeDead = true;
     deathText = theOscMessage.get(0).stringValue();
+    countdownRunning = false;
     clearPanel();
   } 
   else if (theOscMessage.checkAddrPattern("/game/reset") == true) {
@@ -265,6 +275,7 @@ void oscEvent(OscMessage theOscMessage) {
     poweredOn = false;
     poweringOn = false;
     areWeDead = false;
+    countdownRunning = false;
     clearPanel();
   }  
   else if (theOscMessage.checkAddrPattern("/comms/powerState")==true) {
@@ -283,11 +294,18 @@ void oscEvent(OscMessage theOscMessage) {
   else if (theOscMessage.checkAddrPattern("/ship/damage")) {
 
     damageTimer = millis();
-  } else if (theOscMessage.checkAddrPattern("/ship/stats")==true) {
+  } 
+  else if (theOscMessage.checkAddrPattern("/ship/stats")==true) {
 
 
     shipState.hullState = theOscMessage.get(2).floatValue();
   } 
+  else if (theOscMessage.checkAddrPattern("/scene/warzone/evacStart")) {
+    countdownRunning = true;
+    countdownStartTime = millis();
+    countdownDuration = theOscMessage.get(0).longValue();
+    
+  }
   else {
     currentScreen.oscMessage(theOscMessage);
   }
@@ -300,5 +318,4 @@ void hideCursor() {
   cursorImg, new Point(0, 0), "blank cursor");
   frame.setCursor(blankCursor);
 }
-
 

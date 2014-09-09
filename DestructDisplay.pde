@@ -10,10 +10,13 @@ public class DestructDisplay implements Display {
   int blinkTime = 0;
   boolean blinker = false;
   
+
+  
   public DestructDisplay(){
     font = loadFont("HanzelExtendedNormal-48.vlw");
     bgImage = loadImage("destruct.png");
     criticalImg = loadImage("critical.png");
+    
   }
   
   
