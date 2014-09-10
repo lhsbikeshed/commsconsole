@@ -28,6 +28,7 @@ public class DefaultDisplay implements Display {
   public void draw() {
     image(bgImage, 0, 0, width, height);
     textFont(font, 32);
+    fill(255);
     String s = "";
     s += dialFreq;
     s+= "Hz";
@@ -86,8 +87,16 @@ public class DefaultDisplay implements Display {
       } else if(sec < 10){
         secString = "0" + secString;
       }
-      textFont(font, 96);
-      text(minString + ":" + secString, 331, 376);
+      long mil = t % 1000;
+      String milText = "" + mil;
+      if(mil < 10){
+        milText = "00" + milText;
+      } else if (mil < 100){
+        milText = "0" + milText;
+      }
+      
+      textFont(font, 75);
+      text(minString + ":" + secString + ":" + milText, 271, 531);
     }
   }
   //for future silliness

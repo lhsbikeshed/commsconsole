@@ -7,7 +7,6 @@ import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
 
-import processing.video.*;
 
 import processing.serial.*;
 
@@ -18,7 +17,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-//import processing.video.*;
+import processing.video.*;
 
 
 boolean testMode = true;
@@ -29,6 +28,7 @@ VideoDisplay videoDisplay;
 DefaultDisplay defaultDisplay;
 BootDisplay bootDisplay;
 DestructDisplay destructDisplay;
+VideoPlayer videoPlayer;
 
 ConsoleAudio consoleAudio;
 Minim minim;
@@ -93,6 +93,8 @@ void setup() {
   displayMap.put("selfdestruct", destructDisplay);
   displayMap.put("videoDisplay", videoDisplay);
   currentScreen = defaultDisplay;
+  
+  videoPlayer = new VideoPlayer(this);
 
   minim = new Minim(this);
   consoleAudio = new ConsoleAudio(minim);
@@ -206,6 +208,12 @@ void draw() {
           if (serialEnabled) {
             serialPort.write(',');
           }
+          
+          
+        }
+        //on top of this draw the video player if its playing;
+        if(videoPlayer.isPlaying()){
+          videoPlayer.draw();
         }
       }
     }
@@ -303,7 +311,11 @@ void oscEvent(OscMessage theOscMessage) {
   else if (theOscMessage.checkAddrPattern("/scene/warzone/evacStart")) {
     countdownRunning = true;
     countdownStartTime = millis();
-    countdownDuration = theOscMessage.get(0).longValue();
+    countdownDuration = (long)theOscMessage.get(0).intValue();
+  } 
+  else if (theOscMessage.checkAddrPattern("/comms/playVideo")) {
+    String name = theOscMessage.get(0).stringValue();
+    videoPlayer.playVideo(name);
     
   }
   else {

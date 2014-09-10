@@ -4,8 +4,8 @@
 public class CamComponent {
 
 
- // GSCapture cam;
   Capture cam;
+  // Capture cam;
   int numPixels;
   int[] backgroundPixels;
   PImage displayImage;
