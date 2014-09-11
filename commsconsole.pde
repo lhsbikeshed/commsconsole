@@ -71,7 +71,7 @@ Display currentScreen;
 //mission timer 
 long countdownStartTime = 1000;
 boolean countdownRunning = false;
-long countdownDuration = 900000; //15 min default
+long countdownDuration = 120000;//900000; //15 min default
 
 boolean globalBlinker = false;
 long blinkTime = 0;
@@ -312,10 +312,13 @@ void oscEvent(OscMessage theOscMessage) {
     countdownRunning = true;
     countdownStartTime = millis();
     countdownDuration = (long)theOscMessage.get(0).intValue();
-  } 
+   
+  } else if (theOscMessage.checkAddrPattern("/scene/change")) {
+    countdownRunning = false;
+  }
   else if (theOscMessage.checkAddrPattern("/comms/playVideo")) {
     String name = theOscMessage.get(0).stringValue();
-    videoPlayer.playVideo(name);
+    //videoPlayer.playVideo(name);
     
   }
   else {
