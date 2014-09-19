@@ -74,29 +74,46 @@ public class DefaultDisplay implements Display {
       if (globalBlinker) {
         image(evacImage, 25, 160);
       }
-      long t = countdownDuration - millis() - countdownStartTime;
+      long t = countdownDuration - (millis() - countdownStartTime) ;
+    
       long min = (t / 1000 / 60);
-      if(min < 0){
-        min = 0;
-      }
       String minString = "" + min;
+      if(min <= 0){
+        minString = "00";
+      } else if (min < 10){
+        minString = "0" + min;
+      }
+      
       long sec = (t / 1000) % 60;
       String secString = "" + sec;
-      if(sec == 0){
+      if(sec <= 0){
         secString = "00";
       } else if(sec < 10){
         secString = "0" + secString;
       }
+      
       long mil = t % 1000;
       String milText = "" + mil;
-      if(mil < 10){
+      if(mil <= 0){
+        milText = "000";
+      } else if(mil < 10){
         milText = "00" + milText;
       } else if (mil < 100){
         milText = "0" + milText;
       }
       
       textFont(font, 75);
-      text(minString + ":" + secString + ":" + milText, 271, 531);
+      boolean drawIt = false;
+      if(t < 0){
+        if(globalBlinker){
+          drawIt = true;
+        }
+      } else {
+         drawIt = true;
+      }
+      if(drawIt){
+        text(minString + ":" + secString + ":" + milText, 271, 531);
+      }
     }
   }
   //for future silliness

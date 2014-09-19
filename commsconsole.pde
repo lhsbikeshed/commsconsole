@@ -8,10 +8,6 @@ import ddf.minim.effects.*;
 //uncomment for linux
 import codeanticode.gsvideo.*;
 
-//uncomment for windows
-//import processing.video.*;
-
-
 import processing.serial.*;
 
 import oscP5.*;
@@ -71,7 +67,7 @@ Display currentScreen;
 //mission timer 
 long countdownStartTime = 1000;
 boolean countdownRunning = false;
-long countdownDuration = 900000; //15 min default
+long countdownDuration = 120000;//900000; //15 min default
 
 boolean globalBlinker = false;
 long blinkTime = 0;
@@ -94,7 +90,7 @@ void setup() {
   displayMap.put("selfdestruct", destructDisplay);
   displayMap.put("videoDisplay", videoDisplay);
   currentScreen = defaultDisplay;
-  
+
 
   minim = new Minim(this);
   consoleAudio = new ConsoleAudio(minim);
@@ -208,10 +204,7 @@ void draw() {
           if (serialEnabled) {
             serialPort.write(',');
           }
-          
-          
         }
-        
       }
     }
   }
@@ -317,9 +310,12 @@ void oscEvent(OscMessage theOscMessage) {
     countdownStartTime = millis();
     countdownDuration = (long)theOscMessage.get(0).intValue();
   } 
+  else if (theOscMessage.checkAddrPattern("/scene/change")) {
+    countdownRunning = false;
+  }
+
   else {
     currentScreen.oscMessage(theOscMessage);
   }
 }
-
 
