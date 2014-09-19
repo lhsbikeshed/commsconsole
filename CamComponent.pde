@@ -4,7 +4,7 @@
 public class CamComponent {
 
 
-  Capture cam;
+  GSCapture cam;
   // Capture cam;
   int numPixels;
   int[] backgroundPixels;
@@ -19,8 +19,8 @@ public class CamComponent {
 
   public CamComponent(PApplet parent) {
     this.parent = parent;
-    //cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
-    cam = new Capture(parent, 320, 240);
+    cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
+    //cam = new Capture(parent, 320, 240);
     cam.start();
 
     numPixels = cam.width * cam.height;

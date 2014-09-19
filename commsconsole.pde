@@ -1,11 +1,15 @@
-//import codeanticode.gsvideo.*;
-
 import ddf.minim.spi.*;
 import ddf.minim.signals.*;
 import ddf.minim.*;
 import ddf.minim.analysis.*;
 import ddf.minim.ugens.*;
 import ddf.minim.effects.*;
+
+//uncomment for linux
+import codeanticode.gsvideo.*;
+
+//uncomment for windows
+//import processing.video.*;
 
 
 import processing.serial.*;
@@ -17,18 +21,14 @@ import java.util.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-import processing.video.*;
 
-
-boolean testMode = true;
-
-//---------------------------------------------------------------------
+boolean testMode = false;
 
 VideoDisplay videoDisplay;
 DefaultDisplay defaultDisplay;
 BootDisplay bootDisplay;
 DestructDisplay destructDisplay;
-VideoPlayer videoPlayer;
+
 
 ConsoleAudio consoleAudio;
 Minim minim;
@@ -83,6 +83,7 @@ void setup() {
   //set up the camera component
   camComponent = new CamComponent(this);
 
+  hideCursor();
   videoDisplay = new VideoDisplay(this); 
   videoDisplay.setCamComponent(camComponent);
 
@@ -94,7 +95,6 @@ void setup() {
   displayMap.put("videoDisplay", videoDisplay);
   currentScreen = defaultDisplay;
   
-  videoPlayer = new VideoPlayer(this);
 
   minim = new Minim(this);
   consoleAudio = new ConsoleAudio(minim);
@@ -211,10 +211,7 @@ void draw() {
           
           
         }
-        //on top of this draw the video player if its playing;
-        if(videoPlayer.isPlaying()){
-          videoPlayer.draw();
-        }
+        
       }
     }
   }
@@ -237,6 +234,13 @@ void changeDisplay(Display d) {
     currentScreen = d;
     currentScreen.start();
   }
+}
+
+void hideCursor() {
+  BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+  Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+  cursorImg, new Point(0, 0), "blank cursor");
+  frame.setCursor(blankCursor);
 }
 
 
@@ -313,21 +317,9 @@ void oscEvent(OscMessage theOscMessage) {
     countdownStartTime = millis();
     countdownDuration = (long)theOscMessage.get(0).intValue();
   } 
-  else if (theOscMessage.checkAddrPattern("/comms/playVideo")) {
-    String name = theOscMessage.get(0).stringValue();
-    videoPlayer.playVideo(name);
-    
-  }
   else {
     currentScreen.oscMessage(theOscMessage);
   }
 }
 
-
-void hideCursor() {
-  BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-  Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-  cursorImg, new Point(0, 0), "blank cursor");
-  frame.setCursor(blankCursor);
-}
 

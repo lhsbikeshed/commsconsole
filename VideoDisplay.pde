@@ -16,7 +16,15 @@ public class SerialEvent {
   }
 }
 
+
 public class VideoDisplay implements Display {
+
+  //linux
+  GSCapture cam;
+  //windows Capture cam;
+  int numPixels;
+  int[] backgroundPixels;
+  //  Capture video;
 
 
 
@@ -41,13 +49,44 @@ public class VideoDisplay implements Display {
   boolean calling = false;
   int nextDisplay = 0;
 
-  PImage callingImage;
+  PImage callingImage, displayImage;
 
   PApplet parent;
 
   public VideoDisplay(PApplet parent) {
     this.parent = parent;
+
     callingImage = loadImage("incomingcall.png");
+
+    //println(Capture.list());
+    //uncomment for linux
+    cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
+    //uncomment for windows
+    //cam = new Capture(parent, 320, 240);
+    cam.start();
+      
+    numPixels = cam.width * cam.height;
+    backgroundPixels = new int[numPixels];
+    //loadPixels();
+
+
+    //setup chromakey
+    chromaColor = (int)hue(color(0, 128, 0));
+    threshLower = 0;
+    threshUpper = 0;
+
+    bgList[0] = "incomingcall.png";
+    bgList[1] = "test.png";
+    bgList[2] = "test2.png";
+    for (int i = 0; i < bgList.length; i++) {
+      bgImages[i] = loadImage(bgList[i]);
+      bgImages[i].loadPixels();
+    }
+
+
+
+    displayImage = createImage(320, 240, RGB);
+
   }
 
   public void start() {
