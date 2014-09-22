@@ -18,7 +18,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 
-boolean testMode = false;
+boolean testMode = true;
 
 VideoDisplay videoDisplay;
 DefaultDisplay defaultDisplay;

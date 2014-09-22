@@ -58,17 +58,7 @@ public class VideoDisplay implements Display {
 
     callingImage = loadImage("incomingcall.png");
 
-    //println(Capture.list());
-    //uncomment for linux
-    cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
-    //uncomment for windows
-    //cam = new Capture(parent, 320, 240);
-    cam.start();
-      
-    numPixels = cam.width * cam.height;
-    backgroundPixels = new int[numPixels];
-    //loadPixels();
-
+   
 
     //setup chromakey
     chromaColor = (int)hue(color(0, 128, 0));
