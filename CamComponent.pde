@@ -17,10 +17,15 @@ public class CamComponent {
   
    float videoNoiseLevel = 10.0f;
 
+  PVector pos, size;
+
   public CamComponent(PApplet parent) {
     this.parent = parent;
-   // cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
-    cam = new GSCapture(parent, 320, 240, "BisonCam, NB Pro");
+    if(onLinux){
+      cam = new GSCapture(parent, 320, 240, "v4l2src", "/dev/video0", 30);
+    } else {
+      cam = new GSCapture(parent, 320, 240, "BisonCam, NB Pro");
+    }
     cam.start();
 
     numPixels = cam.width * cam.height;
@@ -28,6 +33,8 @@ public class CamComponent {
     //loadPixels();
 
     displayImage = createImage(320, 240, RGB);
+    pos = new PVector(0,0);
+    size = new PVector(width, height);
   }
 
   public void draw() {
@@ -73,10 +80,10 @@ public class CamComponent {
       displayImage.updatePixels();
 
 
-      image(displayImage, 0, 0, parent.width, parent.height);
+      image(displayImage, pos.x, pos.y, size.x, size.y);
     } 
     else {//if not cam data then just show the last frame to prevent flickering
-      image(displayImage, 0, 0, parent.width, parent.height);
+      image(displayImage, pos.x, pos.y, size.x, size.y);
     }
   }
 

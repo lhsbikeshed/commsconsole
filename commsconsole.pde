@@ -19,8 +19,10 @@ import java.awt.image.BufferedImage;
 
 
 boolean testMode = true;
+boolean onLinux = false;
 
 VideoDisplay videoDisplay;
+AudioDisplay audioDisplay;
 DefaultDisplay defaultDisplay;
 BootDisplay bootDisplay;
 DestructDisplay destructDisplay;
@@ -85,11 +87,13 @@ void setup() {
 
   defaultDisplay = new DefaultDisplay();
   destructDisplay = new DestructDisplay();
+  audioDisplay = new AudioDisplay(this);
 
   displayMap.put("idleDisplay", defaultDisplay);
   displayMap.put("selfdestruct", destructDisplay);
   displayMap.put("videoDisplay", videoDisplay);
-  currentScreen = defaultDisplay;
+  displayMap.put("audioDisplay", audioDisplay);
+  currentScreen = audioDisplay;
 
 
   minim = new Minim(this);
@@ -171,11 +175,7 @@ void draw() {
 
   if (areWeDead) {
     fill(255, 255, 255);
-    // textFont(font, 60);
-    // text("YOU ARE DEAD", 50, 300);
-    // textFont(font, 20);
-    //int pos = (int)textWidth(deathText);
-    //text(deathText, (width/2) - pos/2, 340);
+   
   } 
   else {
 

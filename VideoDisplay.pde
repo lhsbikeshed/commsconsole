@@ -66,8 +66,8 @@ public class VideoDisplay implements Display {
     threshUpper = 0;
 
     bgList[0] = "incomingcall.png";
-    bgList[1] = "test.png";
-    bgList[2] = "test2.png";
+    bgList[1] = "incomingcall.png";
+    bgList[2] = "incomingcall.png";
     for (int i = 0; i < bgList.length; i++) {
       bgImages[i] = loadImage(bgList[i]);
       bgImages[i].loadPixels();
