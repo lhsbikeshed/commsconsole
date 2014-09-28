@@ -18,6 +18,9 @@ public class CamComponent {
    float videoNoiseLevel = 10.0f;
 
   PVector pos, size;
+  
+  boolean movieMode = false;
+  GSMovie movieFile;
 
   public CamComponent(PApplet parent) {
     this.parent = parent;
@@ -44,6 +47,26 @@ public class CamComponent {
       lastKeepAlive = millis();
     }
 
+    if(movieMode){
+      doMovie();
+    } else {
+      doCamera();
+    }
+  
+  }
+  
+  public void doMovie(){
+    if(movieFile == null){
+      return;
+    }
+    if(movieFile.available()){
+      movieFile.read();
+    }
+    image(movieFile, 0,0, parent.width, parent.height);
+   
+  }
+  
+  public void doCamera(){
     if (cam.available()) {
       cam.read();
       //stutter the image randomly
@@ -86,6 +109,34 @@ public class CamComponent {
       image(displayImage, pos.x, pos.y, size.x, size.y);
     }
   }
+  
+  public void useCamera(){
+    movieMode = false;
+    println("using camera");
+  }
+  
+  public void setMovie(String name){
+    if(movieFile != null){
+      movieFile.dispose();
+    }
+    movieFile = new GSMovie(parent, name);
+    println("queued movie: " + name);
+  }
+  
+  public void stopMovie(){
+    if(movieFile != null){
+      movieFile.stop();
+    }
+  }
+  
+  public void playMovie(){
+    
+    movieMode = true;
+    if(movieFile != null){
+      movieFile.play();
+    }
+  }
+    
 
   public void setNoiseLevel(int noise) {
       videoNoiseLevel = noise;

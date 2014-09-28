@@ -53,12 +53,16 @@ public class VideoDisplay implements Display {
 
   PApplet parent;
 
+  boolean movieMode = false;
+  boolean moviePlaying = false;
+
+
   public VideoDisplay(PApplet parent) {
     this.parent = parent;
 
     callingImage = loadImage("incomingcall.png");
 
-   
+
 
     //setup chromakey
     chromaColor = (int)hue(color(0, 128, 0));
@@ -76,7 +80,6 @@ public class VideoDisplay implements Display {
 
 
     displayImage = createImage(320, 240, RGB);
-
   }
 
   public void start() {
@@ -85,27 +88,46 @@ public class VideoDisplay implements Display {
     calling = false;
     nextDisplay = 1;
     nextScreen = 1;
-  
   }
 
   public void stop() {
-   
+    if(movieMode){
+      camComponent.stopMovie();
+    }
+    moviePlaying = false;
+    
+  }
+
+  public void setMovie(String name) {
+    camComponent.setMovie(name);
+    movieMode = true;
+    moviePlaying = false;
+  }
+
+  public void setCamera() {
+    movieMode = false;
+    camComponent.useCamera();
   }
 
   public void draw() {
-    
-    
+
+
 
     if (callTime + 2000 > millis()) {
-      image(callingImage, 0,0, width, height);
-    } else {
-    
+      image(callingImage, 0, 0, width, height);
+        if (!moviePlaying && movieMode) {
+          moviePlaying = true;
+        camComponent.playMovie();
+        }
+    }
+    else {
+
       if (camComponent != null) {
         camComponent.draw();
       }
     }
-    
   }
+
 
 
   public void setCamComponent(CamComponent c) {

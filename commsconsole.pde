@@ -18,8 +18,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 
-boolean testMode = true;
-boolean onLinux = false;
+boolean testMode = false;
+boolean onLinux = true;
 
 VideoDisplay videoDisplay;
 AudioDisplay audioDisplay;
@@ -93,12 +93,12 @@ void setup() {
   displayMap.put("selfdestruct", destructDisplay);
   displayMap.put("videoDisplay", videoDisplay);
   displayMap.put("audioDisplay", audioDisplay);
-  currentScreen = audioDisplay;
+  currentScreen = defaultDisplay;
 
 
-  minim = new Minim(this);
-  consoleAudio = new ConsoleAudio(minim);
-  consoleAudio.loadSounds();
+  //  minim = new Minim(this);
+  //  consoleAudio = new ConsoleAudio(minim);
+  //  consoleAudio.loadSounds();
   // bootDisplay = new BootDisplay();
   font = loadFont("HanzelExtendedNormal-48.vlw");
 
@@ -127,6 +127,8 @@ void setup() {
 
   OscMessage myMessage = new OscMessage("/game/Hello/CommStation");  
   oscP5.send(myMessage, myRemoteLocation);
+
+
 }
 
 void clearPanel() {
@@ -144,7 +146,7 @@ void processSerial(char s) {
 
   println("Received : " + s);
   if (poweredOn) {
-    consoleAudio.randomBeep();
+    //consoleAudio.randomBeep();
   }
   SerialEvent e = new SerialEvent();
   e.rawData = s;
@@ -175,7 +177,6 @@ void draw() {
 
   if (areWeDead) {
     fill(255, 255, 255);
-   
   } 
   else {
 
@@ -238,7 +239,7 @@ void hideCursor() {
 
 
 void oscEvent(OscMessage theOscMessage) {
-
+try{
   if (theOscMessage.checkAddrPattern("/system/reactor/stateUpdate")==true) {
     int state = theOscMessage.get(0).intValue();
     if (state == 0) {
@@ -312,10 +313,21 @@ void oscEvent(OscMessage theOscMessage) {
   } 
   else if (theOscMessage.checkAddrPattern("/scene/change")) {
     countdownRunning = false;
+  } 
+  else if (theOscMessage.checkAddrPattern("/clientscreen/CommsStation/setMovieMode")) {
+    String file = theOscMessage.get(0).stringValue();
+    videoDisplay.setMovie(file);
   }
-
+  else if (theOscMessage.checkAddrPattern("/clientscreen/CommsStation/setCameraMode")) {
+   
+    videoDisplay.setCamera();
+  } 
   else {
     currentScreen.oscMessage(theOscMessage);
   }
+  
+} catch (Exception e){
+  e.printStackTrace();
+}
 }
 
