@@ -18,8 +18,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 
 
-boolean testMode = false;
-boolean onLinux = true;
+boolean testMode = true;
+boolean onLinux = false;
 
 VideoDisplay videoDisplay;
 AudioDisplay audioDisplay;
